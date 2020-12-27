@@ -5,7 +5,6 @@ import com.aren.thewitnesspuzzle.core.cursor.Cursor;
 import com.aren.thewitnesspuzzle.core.graph.Edge;
 import com.aren.thewitnesspuzzle.core.graph.Tile;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
-import aren227.thewitness.core.rules.*;
 import com.aren.thewitnesspuzzle.core.rules.*;
 
 import java.util.ArrayList;

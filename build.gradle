@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'aren227'
+group 'com.github.aren227'
 version '1.0-SNAPSHOT'
 
 repositories {

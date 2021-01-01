@@ -130,6 +130,25 @@ public class PuzzleBase {
         return minEdge;
     }
 
+    // Calculate distance using the center of the element
+    public GraphElement getNearestGraphElement(Vector2 pos, boolean containsVertices, boolean containsEdges, boolean containsTiles) {
+        float minDist = Float.MAX_VALUE;
+        GraphElement result = null;
+        List<GraphElement> graphElements = new ArrayList<>();
+        if (containsVertices) graphElements.addAll(getVertices());
+        if (containsEdges) graphElements.addAll(getEdges());
+        if (containsTiles) graphElements.addAll(getTiles());
+
+        for (GraphElement graphElement : graphElements) {
+            if (pos.distance(graphElement.getPosition()) < minDist) {
+                minDist = pos.distance(graphElement.getPosition());
+                result = graphElement;
+            }
+        }
+
+        return result;
+    }
+
     public ArrayList<Vertex> getVertices() {
         return vertices;
     }

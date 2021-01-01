@@ -22,7 +22,7 @@ public class PuzzleBase {
 
     protected ArrayList<Vertex> vertices = new ArrayList<>();
     protected ArrayList<Edge> edges = new ArrayList<>();
-    protected Edge[][] edgeTable; // Indexed by two vertices pair
+    //protected Edge[][] edgeTable; // Indexed by two vertices pair
     protected ArrayList<Tile> tiles = new ArrayList<>();
 
     protected PuzzleColorPalette color;
@@ -130,8 +130,6 @@ public class PuzzleBase {
         }
 
         edges.removeAll(edgesToRemove);
-
-        edgeTable = null;
     }
 
     public void register(GraphElement graphElement) {
@@ -139,7 +137,6 @@ public class PuzzleBase {
             vertices.add((Vertex) graphElement);
         else if(graphElement instanceof Edge) {
             edges.add((Edge) graphElement);
-            edgeTable = null; // Needs to be recalculated
         }
         else if(graphElement instanceof Tile)
             tiles.add((Tile) graphElement);
@@ -224,17 +221,22 @@ public class PuzzleBase {
         return null;
     }
 
-    private void calcEdgeTable() {
+    /* private void calcEdgeTable() {
         edgeTable = new Edge[getVertices().size()][getVertices().size()];
         for (Edge edge : getEdges()) {
             edgeTable[edge.from.index][edge.to.index] = edge;
             edgeTable[edge.to.index][edge.from.index] = edge;
         }
-    }
+    } */
 
     public Edge getEdgeByVertex(Vertex from, Vertex to) {
-        if (edgeTable == null) calcEdgeTable();
-        return edgeTable[from.index][to.index];
+        /* if (edgeTable == null) calcEdgeTable();
+        return edgeTable[from.index][to.index]; */
+        for (Edge edge : getEdges()) {
+            if (edge.from == from && edge.to == to)
+                return edge;
+        }
+        return null;
     }
 
     public List<RuleBase> getAllRules() {

@@ -194,8 +194,6 @@ public class GridSymmetryPuzzle extends GridPuzzle {
         }
 
         edges.removeAll(edgesToRemove);
-
-        edgeTable = null;
     }
 
     public Vertex getOppositeVertex(Vertex vertex) {

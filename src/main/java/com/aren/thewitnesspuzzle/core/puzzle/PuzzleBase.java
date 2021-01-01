@@ -104,6 +104,36 @@ public class PuzzleBase {
         return new Edge(this, getVertex(va), getVertex(vb));
     }
 
+    public void removeVertex(Vertex vertex) {
+        if (!vertices.contains(vertex))
+            return;
+
+        vertices.remove(vertex);
+
+        List<Edge> edgesToRemove = new ArrayList<>();
+        for (Edge edge : getEdges()) {
+            if (edge.from == vertex || edge.to == vertex) {
+                edgesToRemove.add(edge);
+            }
+        }
+
+        for (Edge edge : edgesToRemove) {
+            if (edge.from == vertex) {
+                edge.to.adj.remove(vertex);
+            } else if (edge.to == vertex) {
+                edge.from.adj.remove(vertex);
+            }
+
+            for (Tile tile : getTiles()) {
+                tile.edges.remove(edge);
+            }
+        }
+
+        edges.removeAll(edgesToRemove);
+
+        edgeTable = null;
+    }
+
     public void register(GraphElement graphElement) {
         if(graphElement instanceof Vertex)
             vertices.add((Vertex) graphElement);
@@ -162,15 +192,27 @@ public class PuzzleBase {
     }
 
     public int getNextVertexIndex() {
-        return vertices.size();
+        int maxIdx = 0;
+        for (Vertex vertex : getVertices()) {
+            maxIdx = Math.max(maxIdx, vertex.index);
+        }
+        return maxIdx + 1;
     }
 
     public int getNextEdgeIndex() {
-        return edges.size();
+        int maxIdx = 0;
+        for (Edge edge : getEdges()) {
+            maxIdx = Math.max(maxIdx, edge.index);
+        }
+        return maxIdx + 1;
     }
 
     public int getNextTileIndex() {
-        return tiles.size();
+        int maxIdx = 0;
+        for (Tile tile : getTiles()) {
+            maxIdx = Math.max(maxIdx, tile.index);
+        }
+        return maxIdx + 1;
     }
 
     public Vertex getVertexByPosition(float x, float y) {

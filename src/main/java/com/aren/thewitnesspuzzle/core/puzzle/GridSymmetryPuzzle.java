@@ -5,6 +5,7 @@ import com.aren.thewitnesspuzzle.core.cursor.Cursor;
 import com.aren.thewitnesspuzzle.core.cursor.SymmetryCursor;
 import com.aren.thewitnesspuzzle.core.graph.Edge;
 import com.aren.thewitnesspuzzle.core.graph.EdgeProportion;
+import com.aren.thewitnesspuzzle.core.graph.Tile;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.rules.EndingPointRule;
 import com.aren.thewitnesspuzzle.core.rules.Symmetry;
@@ -12,7 +13,9 @@ import com.aren.thewitnesspuzzle.core.rules.SymmetryType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GridSymmetryPuzzle extends GridPuzzle {
@@ -121,7 +124,17 @@ public class GridSymmetryPuzzle extends GridPuzzle {
     }
 
     @Override
+    public void removeStartingPoint(int x, int y) {
+        super.removeStartingPoint(x, y);
+        if (symmetry.getType() == SymmetryType.VLINE) super.removeStartingPoint(width - x, y);
+        else if (symmetry.getType() == SymmetryType.POINT) super.removeStartingPoint(width - x, height - y);
+    }
+
+    @Override
     public Edge addEndingPoint(int x, int y) {
+        if (isEndingPoint(x, y))
+            return null;
+
         Edge edge1 = super.addEndingPoint(x, y);
         Edge edge2 = null;
         if (symmetry.getType() == SymmetryType.VLINE) edge2 = super.addEndingPoint(width - x, y);
@@ -137,6 +150,52 @@ public class GridSymmetryPuzzle extends GridPuzzle {
             oppositeEdge.put(edge2.index, edge1);
         }
         return edge1;
+    }
+
+    @Override
+    public void removeVertex(Vertex vertex) {
+        if (!vertices.contains(vertex))
+            return;
+
+        Vertex oppoVertex = getOppositeVertex(vertex);
+
+        vertices.remove(vertex);
+        vertices.remove(oppoVertex);
+
+        oppositeVertex.remove(vertex.index);
+        oppositeVertex.remove(oppoVertex.index);
+
+        List<Edge> edgesToRemove = new ArrayList<>();
+        for (Edge edge : getEdges()) {
+            if (edge.from == vertex || edge.to == vertex || edge.from == oppoVertex || edge.to == oppoVertex) {
+                edgesToRemove.add(edge);
+            }
+        }
+
+        for (Edge edge : edgesToRemove) {
+            if (edge.from == vertex) {
+                edge.to.adj.remove(vertex);
+            }
+            if (edge.to == vertex) {
+                edge.from.adj.remove(vertex);
+            }
+            if (edge.from == oppoVertex) {
+                edge.to.adj.remove(oppoVertex);
+            }
+            if (edge.to == oppoVertex) {
+                edge.from.adj.remove(oppoVertex);
+            }
+
+            for (Tile tile : getTiles()) {
+                tile.edges.remove(edge);
+            }
+
+            oppositeEdge.remove(edge.index);
+        }
+
+        edges.removeAll(edgesToRemove);
+
+        edgeTable = null;
     }
 
     public Vertex getOppositeVertex(Vertex vertex) {

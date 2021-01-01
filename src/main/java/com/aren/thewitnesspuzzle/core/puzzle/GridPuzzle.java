@@ -152,7 +152,14 @@ public class GridPuzzle extends PuzzleBase {
         getVertexAt(x, y).setRule(new StartingPointRule());
     }
 
+    public void removeStartingPoint(int x, int y) {
+        getVertexAt(x, y).removeRule();
+    }
+
     public Edge addEndingPoint(int x, int y) {
+        if (isEndingPoint(x, y))
+            return null;
+
         Vertex vertex = null;
         if (y == 0) {
             vertex = new Vertex(this, x, y - getPathWidth());
@@ -170,6 +177,32 @@ public class GridPuzzle extends PuzzleBase {
             return edge;
         }
         return null;
+    }
+
+    public void removeEndingPoint(int x, int y) {
+        if (!isEndingPoint(x, y))
+            return;
+
+        Vertex vertex = getVertexAt(x, y);
+        Vertex vertexToRemove = null;
+        for (Vertex vertex1 : getConnectedVertices(vertex)) {
+            if (vertex1.getRule() instanceof EndingPointRule) {
+                vertexToRemove = vertex1;
+                break;
+            }
+        }
+
+        removeVertex(vertexToRemove);
+    }
+
+    public boolean isEndingPoint(int x, int y) {
+        Vertex vertex = getVertexAt(x, y);
+        for (Vertex vertex1 : getConnectedVertices(vertex)) {
+            if (vertex1.getRule() instanceof EndingPointRule) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /*@Override

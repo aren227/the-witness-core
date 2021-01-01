@@ -39,4 +39,14 @@ public class BrokenLineRule extends RuleBase {
 
         jsonObject.put("collRadius", overrideCollisionCircleRadius);
     }
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException();
+        }
+    }
 }

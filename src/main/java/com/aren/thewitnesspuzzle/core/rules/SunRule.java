@@ -39,7 +39,7 @@ public class SunRule extends Colorable {
                 SunRule sun = (SunRule) tile.getRule();
                 if (sun.eliminated) continue;
                 if (!sunColors.containsKey(sun.color))
-                    sunColors.put(sun.color, new ArrayList<RuleBase>());
+                    sunColors.put(sun.color, new ArrayList<>());
                 sunColors.get(sun.color).add(sun);
             }
         }
@@ -51,7 +51,7 @@ public class SunRule extends Colorable {
             int count = 0;
             for (Tile tile : area.tiles) {
                 if (tile.getRule() instanceof Colorable) {
-                    if (((Colorable) tile.getRule()).eliminated) continue;
+                    if ((tile.getRule()).eliminated) continue;
                     if (((SunRule) suns.get(0)).color == ((Colorable) tile.getRule()).color) {
                         count++;
                         if (count > 2) break;
@@ -64,5 +64,15 @@ public class SunRule extends Colorable {
         }
 
         return areaErrors;
+    }
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException();
+        }
     }
 }

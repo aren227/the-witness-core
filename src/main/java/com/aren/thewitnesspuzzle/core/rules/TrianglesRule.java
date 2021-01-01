@@ -28,7 +28,7 @@ public class TrianglesRule extends RuleBase {
 
     @Override
     public boolean validateLocally(Cursor cursor) {
-        if(eliminated) return true;
+        if (eliminated) return true;
 
         if (getGraphElement() instanceof Tile) {
             Tile tile = (Tile) getGraphElement();
@@ -49,5 +49,14 @@ public class TrianglesRule extends RuleBase {
     @Override
     public void serialize(JSONObject jsonObject) throws JSONException {
         jsonObject.put("count", count);
+    }
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException();
+        }
     }
 }

@@ -36,7 +36,7 @@ public class SquareRule extends Colorable {
                 SquareRule square = (SquareRule) tile.getRule();
                 if (square.eliminated) continue;
                 if (!squareColors.containsKey(square.color))
-                    squareColors.put(square.color, new ArrayList<RuleBase>());
+                    squareColors.put(square.color, new ArrayList<>());
                 squareColors.get(square.color).add(square);
             }
         }
@@ -57,5 +57,15 @@ public class SquareRule extends Colorable {
             }
         }
         return areaErrors;
+    }
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException();
+        }
     }
 }

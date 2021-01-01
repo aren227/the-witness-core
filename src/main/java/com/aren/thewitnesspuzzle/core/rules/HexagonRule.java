@@ -67,4 +67,14 @@ public class HexagonRule extends SymmetricColorable {
 
         jsonObject.put("overrideColor", overrideColor);
     }
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException();
+        }
+    }
 }

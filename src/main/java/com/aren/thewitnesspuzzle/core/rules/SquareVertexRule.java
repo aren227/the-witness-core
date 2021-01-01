@@ -20,4 +20,14 @@ public class SquareVertexRule extends RuleBase {
         return NAME;
     }
 
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException();
+        }
+    }
+
 }

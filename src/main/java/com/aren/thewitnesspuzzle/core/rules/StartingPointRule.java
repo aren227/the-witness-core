@@ -23,4 +23,13 @@ public class StartingPointRule extends RuleBase {
         return getGraphElement().getPuzzleBase().getPathWidth() * 1.1f;
     }
 
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException();
+        }
+    }
 }

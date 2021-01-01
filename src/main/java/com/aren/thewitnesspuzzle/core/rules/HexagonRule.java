@@ -69,9 +69,9 @@ public class HexagonRule extends SymmetricColorable {
     }
 
     @Override
-    public Object clone() {
+    public HexagonRule clone() {
         try {
-            return super.clone();
+            return (HexagonRule) super.clone();
         }
         catch (CloneNotSupportedException e) {
             throw new RuntimeException();

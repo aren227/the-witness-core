@@ -67,9 +67,9 @@ public class SunRule extends Colorable {
     }
 
     @Override
-    public Object clone() {
+    public SunRule clone() {
         try {
-            return super.clone();
+            return (SunRule) super.clone();
         }
         catch (CloneNotSupportedException e) {
             throw new RuntimeException();

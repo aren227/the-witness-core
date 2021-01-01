@@ -24,9 +24,9 @@ public class StartingPointRule extends RuleBase {
     }
 
     @Override
-    public Object clone() {
+    public StartingPointRule clone() {
         try {
-            return super.clone();
+            return (StartingPointRule) super.clone();
         }
         catch (CloneNotSupportedException e) {
             throw new RuntimeException();

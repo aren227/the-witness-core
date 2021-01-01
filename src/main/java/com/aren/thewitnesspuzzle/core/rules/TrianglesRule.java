@@ -52,9 +52,9 @@ public class TrianglesRule extends RuleBase {
     }
 
     @Override
-    public Object clone() {
+    public TrianglesRule clone() {
         try {
-            return super.clone();
+            return (TrianglesRule) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException();
         }

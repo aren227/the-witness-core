@@ -21,9 +21,9 @@ public class SquareVertexRule extends RuleBase {
     }
 
     @Override
-    public Object clone() {
+    public SquareVertexRule clone() {
         try {
-            return super.clone();
+            return (SquareVertexRule) super.clone();
         }
         catch (CloneNotSupportedException e) {
             throw new RuntimeException();

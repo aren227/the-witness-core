@@ -20,9 +20,9 @@ public class EndingPointRule extends RuleBase {
     }
 
     @Override
-    public Object clone() {
+    public EndingPointRule clone() {
         try {
-            return super.clone();
+            return (EndingPointRule) super.clone();
         }
         catch (CloneNotSupportedException e) {
             throw new RuntimeException();

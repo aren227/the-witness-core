@@ -60,9 +60,9 @@ public class SquareRule extends Colorable {
     }
 
     @Override
-    public Object clone() {
+    public SquareRule clone() {
         try {
-            return super.clone();
+            return (SquareRule) super.clone();
         }
         catch (CloneNotSupportedException e) {
             throw new RuntimeException();

@@ -33,9 +33,9 @@ public class EliminationRule extends Colorable {
     }
 
     @Override
-    public Object clone() {
+    public EliminationRule clone() {
         try {
-            return super.clone();
+            return (EliminationRule) super.clone();
         }
         catch (CloneNotSupportedException e) {
             throw new RuntimeException();

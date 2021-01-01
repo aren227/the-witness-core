@@ -41,9 +41,9 @@ public class BrokenLineRule extends RuleBase {
     }
 
     @Override
-    public Object clone() {
+    public BrokenLineRule clone() {
         try {
-            return super.clone();
+            return (BrokenLineRule) super.clone();
         }
         catch (CloneNotSupportedException e) {
             throw new RuntimeException();

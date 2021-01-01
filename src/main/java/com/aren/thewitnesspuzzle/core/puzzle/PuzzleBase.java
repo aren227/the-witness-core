@@ -8,6 +8,7 @@ import com.aren.thewitnesspuzzle.core.graph.Tile;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.math.BoundingBox;
 import com.aren.thewitnesspuzzle.core.math.Vector2;
+import com.aren.thewitnesspuzzle.core.rules.EndingPointRule;
 import com.aren.thewitnesspuzzle.core.rules.RuleBase;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -167,6 +168,8 @@ public class PuzzleBase {
         if (containsTiles) graphElements.addAll(getTiles());
 
         for (GraphElement graphElement : graphElements) {
+            if (graphElement.getRule() instanceof EndingPointRule)
+                continue;
             if (pos.distance(graphElement.getPosition()) < minDist) {
                 minDist = pos.distance(graphElement.getPosition());
                 result = graphElement;
@@ -233,7 +236,8 @@ public class PuzzleBase {
         /* if (edgeTable == null) calcEdgeTable();
         return edgeTable[from.index][to.index]; */
         for (Edge edge : getEdges()) {
-            if (edge.from == from && edge.to == to)
+            if (edge.from == from && edge.to == to
+                || edge.to == from && edge.from == to)
                 return edge;
         }
         return null;

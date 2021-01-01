@@ -289,4 +289,20 @@ public class BlocksRule extends Colorable {
         return grid;
     }
 
+    @Override
+    public BlocksRule clone() {
+        final BlocksRule obj;
+        try {
+            obj = (BlocksRule) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException();
+        }
+        obj.blocks = blocks.clone();
+        obj.blockBits = blockBits.clone();
+        obj.firstBitY = firstBitY.clone();
+        obj.bitWidth = bitWidth.clone();
+        obj.bitHeight = bitHeight.clone();
+        return obj;
+    }
+
 }

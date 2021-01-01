@@ -5,7 +5,7 @@ import com.aren.thewitnesspuzzle.core.graph.GraphElement;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public abstract class RuleBase {
+public abstract class RuleBase implements Cloneable {
 
     private GraphElement graphElement;
 

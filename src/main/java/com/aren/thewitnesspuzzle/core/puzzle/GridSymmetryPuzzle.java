@@ -118,9 +118,20 @@ public class GridSymmetryPuzzle extends GridPuzzle {
 
     @Override
     public void addStartingPoint(int x, int y) {
+        int ox, oy;
+        if (symmetry.getType() == SymmetryType.VLINE) {
+            ox = width - x;
+            oy = y;
+        } else {
+            ox = width - x;
+            oy = height - y;
+        }
+
+        if (x == ox && y == oy)
+            return;
+
         super.addStartingPoint(x, y);
-        if (symmetry.getType() == SymmetryType.VLINE) super.addStartingPoint(width - x, y);
-        else if (symmetry.getType() == SymmetryType.POINT) super.addStartingPoint(width - x, height - y);
+        super.addStartingPoint(ox, oy);
     }
 
     @Override
@@ -135,11 +146,20 @@ public class GridSymmetryPuzzle extends GridPuzzle {
         if (isEndingPoint(x, y))
             return null;
 
+        int ox, oy;
+        if (symmetry.getType() == SymmetryType.VLINE) {
+            ox = width - x;
+            oy = y;
+        } else {
+            ox = width - x;
+            oy = height - y;
+        }
+
+        if (x == ox && y == oy)
+            return null;
+
         Edge edge1 = super.addEndingPoint(x, y);
-        Edge edge2 = null;
-        if (symmetry.getType() == SymmetryType.VLINE) edge2 = super.addEndingPoint(width - x, y);
-        else if (symmetry.getType() == SymmetryType.POINT)
-            edge2 = super.addEndingPoint(width - x, height - y);
+        Edge edge2 = super.addEndingPoint(ox, oy);
 
         // edge1 and edge2 are already opposite each other (check super.addEndingPoint)
         if (edge2 != null) {

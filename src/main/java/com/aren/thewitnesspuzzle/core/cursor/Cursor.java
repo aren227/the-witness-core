@@ -18,7 +18,7 @@ public class Cursor {
     protected ArrayList<EdgeProportion> visitedEdgesWithProportion; // directional
     protected EdgeProportion currentCursorEdge;
 
-    protected boolean[] visitedArr;
+    protected Set<Integer> visitedSet; // for fast searching
 
     public Cursor(PuzzleBase puzzle, Vertex start) {
         this.puzzle = puzzle;
@@ -31,8 +31,8 @@ public class Cursor {
 
         currentCursorEdge = null;
 
-        visitedArr = new boolean[puzzle.getVertices().size()];
-        visitedArr[start.index] = true;
+        visitedSet = new HashSet<>();
+        visitedSet.add(start.index);
     }
 
     public Cursor(PuzzleBase puzzle, ArrayList<Vertex> vertices, EdgeProportion cursorEdge) {
@@ -42,13 +42,13 @@ public class Cursor {
         visitedEdges = new ArrayList<>();
         visitedEdgesWithProportion = new ArrayList<>();
 
-        visitedArr = new boolean[puzzle.getVertices().size()];
+        visitedSet = new HashSet<>();
 
         for (int i = 0; i < vertices.size(); i++) {
             if (i == vertices.size() - 1 && vertices.get(i).getRule() instanceof EndingPointRule)
                 continue;
             visited.add(vertices.get(i));
-            visitedArr[vertices.get(i).index] = true;
+            visitedSet.add(vertices.get(i).index);
             if (i > 0) {
                 EdgeProportion edgeProportion = new EdgeProportion(puzzle.getEdgeByVertex(vertices.get(i - 1), vertices.get(i)));
                 if (edgeProportion.to() == vertices.get(i - 1)) edgeProportion.reverse();
@@ -142,7 +142,7 @@ public class Cursor {
             if(popCnt != -1){
                 // Pop
                 for(int i = 0; i < popCnt; i++){
-                    visitedArr[visited.get(visited.size() - 1).index] = false;
+                    visitedSet.remove(visited.get(visited.size() - 1).index);
 
                     visited.remove(visited.size() - 1);
                     visitedEdges.remove(visitedEdges.size() - 1);
@@ -161,24 +161,21 @@ public class Cursor {
                 if(visited.size() - k <= 0) break;
 
                 // Clone
-                boolean[] tempVisit = new boolean[visitedArr.length];
+                Set<Integer> tempVisit = new HashSet<>();
 
                 // Math.max(0, visited.size() - MAX_POP_COUNT) <-- This will do the trick
                 // When touch position cross a previous cursor line itself,
                 // Remove the gap between the head of the cursor and the cursor line.
                 for(int i = Math.max(0, visited.size() - MAX_POP_COUNT); i < visited.size(); i++){
-                    tempVisit[visited.get(i).index] = true;
+                    tempVisit.add(visited.get(i).index);
                 }
 
                 // Start from the k-th last vertex
                 Vertex start = visited.get(visited.size() - 1 - k);
-                tempVisit[start.index] = false;
+                tempVisit.remove(start.index);
 
-                // Array for back tracking
-                int[] prev = new int[visitedArr.length];
-                for(int i = 0; i < prev.length; i++){
-                    prev[i] = -1;
-                }
+                // Map for back tracking
+                Map<Integer, Integer> prev = new HashMap<>();
 
                 Queue<VertexD> q = new LinkedList<>();
                 q.add(new VertexD(start, -1, 0));
@@ -188,11 +185,11 @@ public class Cursor {
                 int MAX_DIST = MAX_POP_COUNT - k;
                 while(q.size() > 0){
                     VertexD front = q.poll();
-                    if(tempVisit[front.vertex.index]) continue;
+                    if(tempVisit.contains(front.vertex.index)) continue;
                     if(front.dist > MAX_DIST) continue;
 
-                    tempVisit[front.vertex.index] = true;
-                    prev[front.vertex.index] = front.prev;
+                    tempVisit.add(front.vertex.index);
+                    prev.put(front.vertex.index, front.prev);
 
                     if(target.edge.containsVertex(front.vertex)){
                         last = front.vertex;
@@ -218,14 +215,14 @@ public class Cursor {
                 }
 
                 List<Vertex> path = new ArrayList<>();
-                for(int i = last.index; prev[i] != -1; i = prev[i]){
+                for(int i = last.index; prev.containsKey(i) && prev.get(i) != -1; i = prev.get(i)){
                     path.add(puzzle.getVertex(i));
                 }
                 Collections.reverse(path);
 
                 // Pop
                 for(int i = 0; i < k; i++){
-                    visitedArr[visited.get(visited.size() - 1).index] = false;
+                    visitedSet.remove(visited.get(visited.size() - 1).index);
 
                     visited.remove(visited.size() - 1);
                     visitedEdges.remove(visitedEdges.size() - 1);
@@ -250,7 +247,7 @@ public class Cursor {
                     }
 
                     visited.add(v);
-                    visitedArr[v.index] = true;
+                    visitedSet.add(v.index);
                     visitedEdges.add(e);
                     visitedEdgesWithProportion.add(ep);
 

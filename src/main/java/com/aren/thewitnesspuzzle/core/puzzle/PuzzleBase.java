@@ -170,6 +170,10 @@ public class PuzzleBase {
         for (GraphElement graphElement : graphElements) {
             if (graphElement.getRule() instanceof EndingPointRule)
                 continue;
+            if (graphElement instanceof Edge
+                    && (((Edge) graphElement).from.getRule() instanceof EndingPointRule
+                    || ((Edge) graphElement).to.getRule() instanceof EndingPointRule))
+                continue;
             if (pos.distance(graphElement.getPosition()) < minDist) {
                 minDist = pos.distance(graphElement.getPosition());
                 result = graphElement;

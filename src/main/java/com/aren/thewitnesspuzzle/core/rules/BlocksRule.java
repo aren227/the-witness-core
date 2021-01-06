@@ -8,6 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class BlocksRule extends Colorable {
@@ -170,18 +172,36 @@ public class BlocksRule extends Colorable {
     }
 
     private static long board = 0;
-    private static int[][] boardDebug;
+    // private static int[][] boardDebug;
+    private static long cachedCount = 0;
+    private static final long MAX_CACHE = 10000000;
 
-    public static boolean tryAllPermutation(List<BlocksRule> rules, boolean[] taken, int takenCount, int puzzleWidth, int puzzleHeight) {
-        if (takenCount == taken.length) {
+    private static final HashMap<Long, HashSet<Long>> dp = new HashMap<>();
+
+    public static boolean tryAllPermutation(List<BlocksRule> rules, long taken, int takenCount, int puzzleWidth, int puzzleHeight) {
+        if (takenCount == rules.size()) {
             return true;
         } else {
+            HashSet<Long> set = null;
+            if (cachedCount < MAX_CACHE && rules.size() - takenCount <= 7) {
+                if (dp.containsKey(taken))
+                    set = dp.get(taken);
+                else {
+                    set = new HashSet<>();
+                    dp.put(taken, set);
+                }
+            }
+
+            // Pruning
+            if (set != null && set.contains(board))
+                return false;
+
             // Try to fill rightmost zero bit => Fill the board from the left-bottom first
             int index = Long.numberOfTrailingZeros(~board);
             int indexX = index / puzzleHeight;
             int indexY = index % puzzleHeight;
-            for (int i = 0; i < taken.length; i++) {
-                if (taken[i]) continue;
+            for (int i = 0; i < rules.size(); i++) {
+                if (((taken >> i) & 1) > 0) continue;
                 BlocksRule block = rules.get(i);
                 // If the block is rotatable, try all directions
                 for (int j = 0; j < block.blockBits.length; j++) {
@@ -196,7 +216,7 @@ public class BlocksRule extends Colorable {
                     // Placing the block in the right position by shifting bits
                     long b = block.blockBits[j] << index;
                     if ((board & b) == 0) {
-                        taken[i] = true;
+                        taken |= 1 << i;
                         board ^= b;
 
                         // Debug
@@ -220,9 +240,15 @@ public class BlocksRule extends Colorable {
                             return true;
                         }
                         board ^= b;
-                        taken[i] = false;
+                        taken ^= 1 << i;
                     }
                 }
+            }
+            if (set != null) {
+                set.add(board);
+                cachedCount++;
+                if (cachedCount % 10000 == 0)
+                    System.out.println("Cached = " + cachedCount);
             }
             return false;
         }
@@ -249,16 +275,23 @@ public class BlocksRule extends Colorable {
 
         board = ~0L;
         GridPuzzle gridPuzzle = (GridPuzzle) area.puzzle;
-        boardDebug = new int[gridPuzzle.getWidth()][gridPuzzle.getHeight()];
+        /*boardDebug = new int[gridPuzzle.getWidth()][gridPuzzle.getHeight()];
         for (int i = 0; i < gridPuzzle.getWidth(); i++) {
             for (int j = 0; j < gridPuzzle.getHeight(); j++) {
                 boardDebug[i][j] = -1;
             }
-        }
+        }*/
         for (Tile tile : area.tiles) {
             board &= ~(1L << (tile.getGridY() + (tile.getGridX() * gridPuzzle.getHeight())));
         }
-        if (!tryAllPermutation(blockRules, new boolean[blockRules.size()], 0, gridPuzzle.getWidth(), gridPuzzle.getHeight())) {
+        dp.clear();
+        cachedCount = 0;
+        boolean res = tryAllPermutation(blockRules, 0, 0, gridPuzzle.getWidth(), gridPuzzle.getHeight());
+        for (HashSet<Long> v : dp.values())
+            v.clear();
+        dp.clear();
+
+        if (!res) {
             return rules;
         }
         /*for (int i = gridPuzzle.getHeight() - 1; i >= 0; i--) {

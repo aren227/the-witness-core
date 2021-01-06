@@ -12,9 +12,10 @@ public class ValidationResult {
     public List<RuleBase> notOnAreaErrors = new ArrayList<>();
     public List<Area.AreaValidationResult> areaValidationResults = new ArrayList<>();
     public boolean forceFail = false;
+    public boolean timedOut = false;
 
     public boolean failed() {
-        if (forceFail) return true;
+        if (timedOut || forceFail) return true;
         if (notOnAreaErrors.size() > 0) return true;
         for (Area.AreaValidationResult result : areaValidationResults) {
             if (!result.eliminated && result.originalErrors.size() > 0) return true;
@@ -24,6 +25,7 @@ public class ValidationResult {
     }
 
     public boolean hasEliminatedRule() {
+        if (timedOut) return false;
         for (Area.AreaValidationResult result : areaValidationResults) {
             if (result.eliminated) return true;
         }

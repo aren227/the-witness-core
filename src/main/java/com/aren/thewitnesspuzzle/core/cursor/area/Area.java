@@ -48,7 +48,10 @@ public class Area {
         }
     }
 
-    private boolean eliminate(Cursor cursor, List<RuleBase> errors, int idx, int eliminatorCnt, int eliminatorUsed){
+    private boolean eliminate(Cursor cursor, List<RuleBase> errors, int idx, int eliminatorCnt, int eliminatorUsed) throws InterruptedException {
+        if (Thread.interrupted())
+            throw new InterruptedException();
+
         if(eliminatorCnt <= eliminatorUsed || idx >= errors.size()){
             // The half of the unused elimination rules can eliminate the rest of them
             if((eliminatorCnt - eliminatorUsed) % 2 != 0) return false;
@@ -72,7 +75,7 @@ public class Area {
     }
 
     // Make random elimination state
-    private boolean randomlyEliminate(Cursor cursor, Random random, List<RuleBase> errors, int idx, List<EliminationRule> eliminators, int eliminatorUsed, AreaValidationResult result){
+    private boolean randomlyEliminate(Cursor cursor, Random random, List<RuleBase> errors, int idx, List<EliminationRule> eliminators, int eliminatorUsed, AreaValidationResult result) throws InterruptedException {
         if(eliminators.size() <= eliminatorUsed || idx >= errors.size()){
             // Force to use all elimination rules
             if(eliminatorUsed != Math.min(eliminators.size(), errors.size())) return false;
@@ -123,7 +126,7 @@ public class Area {
         }
     }
 
-    public AreaValidationResult validate(Cursor cursor) {
+    public AreaValidationResult validate(Cursor cursor) throws InterruptedException {
         calculateEdgesAndVertices(cursor);
 
         for (RuleBase rule : getAllRules()) {
@@ -153,7 +156,7 @@ public class Area {
 
         result.eliminated = true;
 
-        // All elimination symbols are eliminated themselves (e.i. sun rules can't pair with them).
+        // All elimination symbols are eliminated themselves (i.e. sun rules can't pair with them).
         for(EliminationRule eliminationRule : eliminationRules){
             eliminationRule.eliminated = true;
         }

@@ -174,11 +174,14 @@ public class BlocksRule extends Colorable {
     private static long board = 0;
     // private static int[][] boardDebug;
     private static long cachedCount = 0;
-    private static final long MAX_CACHE = 10000000;
+    private static final long MAX_CACHE = 1000000;
 
     private static final HashMap<Long, HashSet<Long>> dp = new HashMap<>();
 
-    public static boolean tryAllPermutation(List<BlocksRule> rules, long taken, int takenCount, int puzzleWidth, int puzzleHeight) {
+    public static boolean tryAllPermutation(List<BlocksRule> rules, long taken, int takenCount, int puzzleWidth, int puzzleHeight) throws InterruptedException {
+        if (Thread.interrupted())
+            throw new InterruptedException();
+
         if (takenCount == rules.size()) {
             return true;
         } else {
@@ -254,7 +257,7 @@ public class BlocksRule extends Colorable {
         }
     }
 
-    public static List<RuleBase> areaValidate(Area area) {
+    public static List<RuleBase> areaValidate(Area area) throws InterruptedException {
         List<BlocksRule> blockRules = new ArrayList<>();
         List<RuleBase> rules = new ArrayList<>();
         int blockCount = 0;

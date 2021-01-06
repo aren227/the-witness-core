@@ -48,12 +48,16 @@ public class Area {
         }
     }
 
+    // When we try to validate a puzzle with (multiple) elimination rule,
+    // We should try all combination of original errors.
+    // But the number of unused elimination rules should be even.
+    // Otherwise, there will always be one unused elimination rule left. -> Error!
+    // Half of the unpaired elimination rules can be used to eliminate the rest.
     private boolean eliminate(Cursor cursor, List<RuleBase> errors, int idx, int eliminatorCnt, int eliminatorUsed) throws InterruptedException {
         if (Thread.interrupted())
             throw new InterruptedException();
 
         if(eliminatorCnt <= eliminatorUsed || idx >= errors.size()){
-            // The half of the unused elimination rules can eliminate the rest of them
             if((eliminatorCnt - eliminatorUsed) % 2 != 0) return false;
 
             for (RuleBase rule : getAllRules()) {
@@ -75,25 +79,35 @@ public class Area {
     }
 
     // Make random elimination state
+    // This function can be called with empty error.
+    // ex) A puzzle from in-game:
+    // RE X  X  X
+    // X  RS X  X
+    // X  X  BS X
+    // X  X  X  BE
+    // (R: Red, B: Blue, E: Elimination, S: Sun)
     private boolean randomlyEliminate(Cursor cursor, Random random, List<RuleBase> errors, int idx, List<EliminationRule> eliminators, int eliminatorUsed, AreaValidationResult result) throws InterruptedException {
         if(eliminators.size() <= eliminatorUsed || idx >= errors.size()){
             // Force to use all elimination rules
-            if(eliminatorUsed != Math.min(eliminators.size(), errors.size())) return false;
+            // Except error is empty
+            if(errors.size() > 0 && (eliminators.size() - eliminatorUsed) % 2 != 0) return false;
+
+            // It can be even or odd (mostly even).
+            int unused = eliminators.size() - eliminatorUsed;
 
             Collections.shuffle(eliminators, random);
-            for(int i = eliminatorUsed; i < eliminators.size(); i++){
-                // Eliminate themselves
-                if(i + 1 < eliminators.size()){
-                    i++;
-                    eliminatorUsed++;
-                    continue;
-                }
-                eliminators.get(i).eliminated = false;
+            for(int i = 0; i < Math.ceil(unused / 2.0); i++){
                 result.originalErrors.add(eliminators.get(i));
             }
 
+            // Not paired
+            if (unused % 2 == 1) {
+                eliminators.get(0).eliminated = false;
+                result.newErrors.add(eliminators.get(0));
+            }
+
             // Elimination rule not used
-            if(eliminatorUsed == 0) result.eliminated = false;
+            if(unused == 1) result.eliminated = false;
 
             for (RuleBase rule : getAllRules()) {
                 if (!rule.validateLocally(cursor)) result.newErrors.add(rule);
@@ -141,6 +155,7 @@ public class Area {
         errors.addAll(SquareRule.areaValidate(this));
         errors.addAll(SunRule.areaValidate(this));
         errors.addAll(BlocksRule.areaValidate(this));
+        Collections.shuffle(errors);
 
         List<EliminationRule> eliminationRules = new ArrayList<>();
         for (Tile tile : tiles) {
@@ -163,11 +178,24 @@ public class Area {
 
         // Success
         if(eliminate(cursor, errors, 0, eliminationRules.size(), 0)){
+            int eliminatorUsed = 0;
+            for (RuleBase ruleBase : errors) {
+                if (ruleBase.eliminated)
+                    eliminatorUsed++;
+            }
+
+            // Add half of the unused elimination rules as original errors
+            // eliminationRules.size() - eliminatorUsed is always even
+            Collections.shuffle(eliminationRules);
+            for (int i = 0; i < (eliminationRules.size() - eliminatorUsed) / 2; i++)
+                result.originalErrors.add(eliminationRules.get(i));
+
             return result;
         }
 
         // Failed
         result.newErrors.clear();
+
         randomlyEliminate(cursor, new Random(), errors, 0, eliminationRules, 0, result);
         return result;
     }

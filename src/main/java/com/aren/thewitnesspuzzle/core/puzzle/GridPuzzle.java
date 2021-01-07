@@ -7,6 +7,7 @@ import com.aren.thewitnesspuzzle.core.graph.Tile;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.math.BoundingBox;
 import com.aren.thewitnesspuzzle.core.math.Vector2;
+import com.aren.thewitnesspuzzle.core.rules.BlocksRule;
 import com.aren.thewitnesspuzzle.core.rules.EndingPointRule;
 import com.aren.thewitnesspuzzle.core.rules.StartingPointRule;
 import org.json.JSONException;
@@ -106,6 +107,11 @@ public class GridPuzzle extends PuzzleBase {
             int i = tile.getGridX();
             int j = tile.getGridY();
             gridTiles[i][j] = tile;
+
+            if (tile.getRule() instanceof BlocksRule) {
+                BlocksRule blocksRule = (BlocksRule) tile.getRule();
+                tile.setRule(new BlocksRule(blocksRule.blocks, getHeight(), blocksRule.rotatable, blocksRule.subtractive, blocksRule.color));
+            }
 
             tile.edges.add(getEdgeAt(i, j, true));
             tile.edges.add(getEdgeAt(i, j, false));

@@ -61,7 +61,8 @@ public class BlocksRule extends Colorable {
         rotatable = jsonObject.getBoolean("rotatable");
         subtractive = jsonObject.getBoolean("subtractive");
 
-        preCalculateBitMagic();
+        // NOTE: re-initialize with puzzleHeight in GridPuzzle constructor.
+        // preCalculateBitMagic();
     }
 
     public void preCalculateBitMagic() {

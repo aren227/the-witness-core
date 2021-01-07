@@ -89,8 +89,8 @@ public class GraphElement {
 
     protected void serialize(JSONObject jsonObject) throws JSONException {
         jsonObject.put("index", index);
-        jsonObject.put("x", x);
-        jsonObject.put("y", y);
+        jsonObject.put("x", (double) x);
+        jsonObject.put("y", (double) y);
 
         if(rule != null)
             jsonObject.put("rule", rule.serialize());

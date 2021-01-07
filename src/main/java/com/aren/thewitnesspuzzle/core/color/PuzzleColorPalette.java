@@ -111,7 +111,7 @@ public class PuzzleColorPalette {
         jsonObject.put("cursor", getCursorColor());
         jsonObject.put("success", getCursorSucceededColor());
         jsonObject.put("failure", getCursorFailedColor());
-        jsonObject.put("bloom", getBloomIntensity());
+        jsonObject.put("bloom", (double) getBloomIntensity());
         return jsonObject;
     }
 }

@@ -37,7 +37,7 @@ public class BrokenLineRule extends RuleBase {
     public void serialize(JSONObject jsonObject) throws JSONException {
         super.serialize(jsonObject);
 
-        jsonObject.put("collRadius", overrideCollisionCircleRadius);
+        jsonObject.put("collRadius", (double) overrideCollisionCircleRadius);
     }
 
     @Override

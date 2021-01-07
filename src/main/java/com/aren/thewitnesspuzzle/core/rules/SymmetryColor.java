@@ -35,4 +35,36 @@ public enum SymmetryColor {
             return other == YELLOW || other == YELLOW2;
         return true;
     }
+
+    public SymmetryColor getOppositeColor() {
+        switch (this) {
+            case CYAN:
+                return YELLOW;
+            case YELLOW:
+                return CYAN;
+            case CYAN2:
+                return YELLOW2;
+            case YELLOW2:
+                return CYAN2;
+        }
+        return NONE;
+    }
+
+    public SymmetryColor changeColorTheme(SymmetryColor colorTheme) {
+        if (this == NONE || colorTheme == NONE || colorTheme == null)
+            return this;
+        if (colorTheme == SymmetryColor.CYAN || colorTheme == SymmetryColor.YELLOW) {
+            if (this == CYAN2)
+                return CYAN;
+            if (this == YELLOW2)
+                return YELLOW;
+            return this;
+        } else {
+            if (this == CYAN)
+                return CYAN2;
+            if (this == YELLOW)
+                return YELLOW2;
+            return this;
+        }
+    }
 }

@@ -35,14 +35,14 @@ public class HexagonRule extends SymmetricColorable {
         if (getGraphElement() instanceof Edge) {
             if (!cursor.containsEdge((Edge) getGraphElement())) return false;
             if (hasSymmetricColor() && cursor instanceof SymmetryCursor && ((SymmetryCursor) cursor).hasSymmetricColor()) {
-                return ((SymmetryCursor) cursor).getSymmetricColor((Edge) getGraphElement()) == getSymmetricColor();
+                return ((SymmetryCursor) cursor).getSymmetricColor((Edge) getGraphElement()).check(getSymmetricColor());
             }
             return true;
         }
         if (getGraphElement() instanceof Vertex) {
             if (!cursor.containsVertex((Vertex) getGraphElement())) return false;
             if (hasSymmetricColor() && cursor instanceof SymmetryCursor && ((SymmetryCursor) cursor).hasSymmetricColor()) {
-                return ((SymmetryCursor) cursor).getSymmetricColor((Vertex) getGraphElement()) == getSymmetricColor();
+                return ((SymmetryCursor) cursor).getSymmetricColor((Vertex) getGraphElement()).check(getSymmetricColor());
             }
             return true;
         }

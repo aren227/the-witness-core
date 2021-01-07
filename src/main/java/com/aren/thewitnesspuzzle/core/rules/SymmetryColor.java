@@ -27,4 +27,12 @@ public enum SymmetryColor {
         }
         return null;
     }
+
+    public boolean check(SymmetryColor other) {
+        if (this == CYAN || this == CYAN2)
+            return other == CYAN || other == CYAN2;
+        if (this == YELLOW || this == YELLOW2)
+            return other == YELLOW || other == YELLOW2;
+        return true;
+    }
 }

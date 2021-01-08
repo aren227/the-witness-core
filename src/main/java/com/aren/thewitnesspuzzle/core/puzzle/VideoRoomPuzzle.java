@@ -1,6 +1,7 @@
 package com.aren.thewitnesspuzzle.core.puzzle;
 
 import com.aren.thewitnesspuzzle.core.color.PuzzleColorPalette;
+import com.aren.thewitnesspuzzle.core.graph.Edge;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.rules.EndingPointRule;
 import com.aren.thewitnesspuzzle.core.rules.StartingPointRule;
@@ -96,52 +97,52 @@ public class VideoRoomPuzzle extends PuzzleBase {
         list.add(new Vertex(this, 2.5f + el, -h));
         list.get(33).setRule(new EndingPointRule());
 
-        addEdge(24, 2);
-        addEdge(2, 0);
-        addEdge(0, 3);
-        addEdge(3, 1);
-        addEdge(1, 4);
+        new Edge(this, list.get(24), list.get(2));
+        new Edge(this, list.get(2), list.get(0));
+        new Edge(this, list.get(0), list.get(3));
+        new Edge(this, list.get(3), list.get(1));
+        new Edge(this, list.get(1), list.get(4));
 
-        addEdge(2, 5);
-        addEdge(3, 6);
-        addEdge(4, 25);
-        addEdge(25, 7);
+        new Edge(this, list.get(2), list.get(5));
+        new Edge(this, list.get(3), list.get(6));
+        new Edge(this, list.get(4), list.get(25));
+        new Edge(this, list.get(25), list.get(7));
 
-        addEdge(8, 5);
-        addEdge(5, 9);
-        addEdge(9, 6);
-        addEdge(6, 10);
-        addEdge(10, 7);
-        addEdge(7, 11);
-        addEdge(11, 26);
+        new Edge(this, list.get(8), list.get(5));
+        new Edge(this, list.get(5), list.get(9));
+        new Edge(this, list.get(9), list.get(6));
+        new Edge(this, list.get(6), list.get(10));
+        new Edge(this, list.get(10), list.get(7));
+        new Edge(this, list.get(7), list.get(11));
+        new Edge(this, list.get(11), list.get(26));
 
-        addEdge(8, 12);
-        addEdge(9, 27);
-        addEdge(27, 13);
-        addEdge(10, 14);
-        addEdge(11, 15);
+        new Edge(this, list.get(8), list.get(12));
+        new Edge(this, list.get(9), list.get(27));
+        new Edge(this, list.get(27), list.get(13));
+        new Edge(this, list.get(10), list.get(14));
+        new Edge(this, list.get(11), list.get(15));
 
-        addEdge(12, 16);
-        addEdge(16, 13);
-        addEdge(13, 17);
-        addEdge(17, 14);
-        addEdge(14, 28);
-        addEdge(14, 18);
-        addEdge(18, 15);
+        new Edge(this, list.get(12), list.get(16));
+        new Edge(this, list.get(16), list.get(13));
+        new Edge(this, list.get(13), list.get(17));
+        new Edge(this, list.get(17), list.get(14));
+        new Edge(this, list.get(14), list.get(28));
+        new Edge(this, list.get(14), list.get(18));
+        new Edge(this, list.get(18), list.get(15));
 
-        addEdge(16, 29);
-        addEdge(29, 30);
-        addEdge(29, 19);
-        addEdge(17, 31);
-        addEdge(31, 32);
-        addEdge(31, 20);
-        addEdge(18, 21);
+        new Edge(this, list.get(16), list.get(29));
+        new Edge(this, list.get(29), list.get(30));
+        new Edge(this, list.get(29), list.get(19));
+        new Edge(this, list.get(17), list.get(31));
+        new Edge(this, list.get(31), list.get(32));
+        new Edge(this, list.get(31), list.get(20));
+        new Edge(this, list.get(18), list.get(21));
 
-        addEdge(19, 22);
-        addEdge(22, 33);
-        addEdge(22, 20);
-        addEdge(20, 23);
-        addEdge(23, 21);
+        new Edge(this, list.get(19), list.get(22));
+        new Edge(this, list.get(22), list.get(33));
+        new Edge(this, list.get(22), list.get(20));
+        new Edge(this, list.get(20), list.get(23));
+        new Edge(this, list.get(23), list.get(21));
     }
 
     public VideoRoomPuzzle(JSONObject jsonObject) {

@@ -196,7 +196,7 @@ public class PuzzleBase {
     }
 
     public int getNextVertexIndex() {
-        int maxIdx = 0;
+        int maxIdx = -1;
         for (Vertex vertex : getVertices()) {
             maxIdx = Math.max(maxIdx, vertex.index);
         }
@@ -204,7 +204,7 @@ public class PuzzleBase {
     }
 
     public int getNextEdgeIndex() {
-        int maxIdx = 0;
+        int maxIdx = -1;
         for (Edge edge : getEdges()) {
             maxIdx = Math.max(maxIdx, edge.index);
         }
@@ -212,7 +212,7 @@ public class PuzzleBase {
     }
 
     public int getNextTileIndex() {
-        int maxIdx = 0;
+        int maxIdx = -1;
         for (Tile tile : getTiles()) {
             maxIdx = Math.max(maxIdx, tile.index);
         }

@@ -33,7 +33,8 @@ public class BoundingBox {
 
     public void addPoint(Vector2 point) {
         if (min == null || max == null) {
-            min = max = point;
+            min = point.clone();
+            max = point.clone();
         } else {
             min.x = Math.min(min.x, point.x);
             min.y = Math.min(min.y, point.y);

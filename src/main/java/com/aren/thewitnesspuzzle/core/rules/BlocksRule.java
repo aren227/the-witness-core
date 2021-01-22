@@ -67,13 +67,26 @@ public class BlocksRule extends Colorable {
         bottomLeftY = new int[rotatable ? 4 : 1];
         for (int i = 0; i < (rotatable ? 4 : 1); i++) {
             boolean[][] rotated = rotateBlocks(blocks, i);
-            int bly = 0;
-            for (; bly < rotated[0].length; bly++) {
-                if (rotated[0][bly])
+
+            boolean unique = true;
+            for (boolean[][] b : rotatedBlocks) {
+                if (equalBlocks(rotated, b)) {
+                    unique = false;
                     break;
+                }
             }
 
-            rotatedBlocks.add(rotated);
+            if (unique)
+                rotatedBlocks.add(rotated);
+        }
+
+        bottomLeftY = new int[rotatedBlocks.size()];
+        for (int i = 0; i < rotatedBlocks.size(); i++) {
+            int bly = 0;
+            for (; bly < rotatedBlocks.get(i)[0].length; bly++) {
+                if (rotatedBlocks.get(i)[0][bly])
+                    break;
+            }
             bottomLeftY[i] = bly;
         }
 

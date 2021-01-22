@@ -3,7 +3,7 @@ package com.aren.thewitnesspuzzle.core.rules;
 import com.aren.thewitnesspuzzle.core.color.ColorUtils;
 
 public enum Color {
-    BLACK, WHITE, ORANGE, LIME, PURPLE, CYAN, RED, YELLOW;
+    BLACK, WHITE, ORANGE, LIME, PURPLE, CYAN, RED, YELLOW, BLUE;
 
     public int getRGB() {
         if (this == BLACK) {
@@ -22,6 +22,8 @@ public enum Color {
             return ColorUtils.RGB(255, 65, 0);
         } else if (this == YELLOW) {
             return ColorUtils.RGB(255, 225, 0);
+        } else if (this == BLUE) {
+            return ColorUtils.RGB(0, 0, 255);
         }
         return 0;
     }

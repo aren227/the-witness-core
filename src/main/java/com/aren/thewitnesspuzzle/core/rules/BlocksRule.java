@@ -1,15 +1,13 @@
 package com.aren.thewitnesspuzzle.core.rules;
 
-import com.aren.thewitnesspuzzle.core.puzzle.GridPuzzle;
 import com.aren.thewitnesspuzzle.core.cursor.area.Area;
 import com.aren.thewitnesspuzzle.core.graph.Tile;
 import com.aren.thewitnesspuzzle.core.math.Vector2Int;
+import com.aren.thewitnesspuzzle.core.puzzle.GridPuzzle;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class BlocksRule extends Colorable {
@@ -17,133 +15,145 @@ public class BlocksRule extends Colorable {
     public static final String NAME = "blocks";
 
     public boolean[][] blocks;
-    public long[] blockBits;
-    public int[] firstBitY;
-    public int[] bitWidth;
-    public int[] bitHeight;
-    public int width;
-    public int height;
-    public int puzzleHeight;
-    public boolean rotatable;
-    public boolean subtractive;
+    public List<boolean[][]> rotatedBlocks;
+    public int[] bottomLeftY; // lower cell in the leftmost column
+    public final int width;
+    public final int height;
+    public int count;
+    public final boolean rotatable;
+    public final boolean subtractive;
 
-    public BlocksRule(boolean[][] blocks, int puzzleHeight, boolean rotatable, boolean subtractive) {
-        this(blocks, puzzleHeight, rotatable, subtractive, Color.YELLOW);
+    public BlocksRule(boolean[][] blocks, boolean rotatable, boolean subtractive) {
+        this(blocks, rotatable, subtractive, Color.YELLOW);
     }
 
-    public BlocksRule(boolean[][] blocks, int puzzleHeight, boolean rotatable, boolean subtractive, Color color) {
+    public BlocksRule(boolean[][] blocks, boolean rotatable, boolean subtractive, Color color) {
         super(color);
 
-        this.blocks = blocks;
+        this.blocks = optimizeBlocks(blocks);
         width = blocks.length;
         height = blocks[0].length;
-        this.puzzleHeight = puzzleHeight;
         this.rotatable = rotatable;
         this.subtractive = subtractive;
 
-        preCalculateBitMagic();
+        precalculate();
     }
 
     public BlocksRule(JSONObject jsonObject) throws JSONException {
         super(jsonObject);
 
-        width = jsonObject.getInt("width");
-        height = jsonObject.getInt("height");
+        int tempWidth = jsonObject.getInt("width");
+        int tempHeight = jsonObject.getInt("height");
         String blocksStr = jsonObject.getString("blocks");
 
-        blocks = new boolean[width][height];
-        for(int i = 0; i < width; i++){
-            for(int j = 0; j < height; j++){
-                blocks[i][j] = blocksStr.charAt(i * height + j) == '1';
+        boolean[][] tempBlocks = new boolean[tempWidth][tempHeight];
+        for(int i = 0; i < tempWidth; i++){
+            for(int j = 0; j < tempHeight; j++){
+                tempBlocks[i][j] = blocksStr.charAt(i * tempHeight + j) == '1';
             }
         }
 
+        blocks = optimizeBlocks(tempBlocks);
+        width = blocks.length;
+        height = blocks[0].length;
         rotatable = jsonObject.getBoolean("rotatable");
         subtractive = jsonObject.getBoolean("subtractive");
 
-        // NOTE: re-initialize with puzzleHeight in GridPuzzle constructor.
-        // preCalculateBitMagic();
+        precalculate();
     }
 
-    public void preCalculateBitMagic() {
-        if (rotatable) {
-            blockBits = new long[4];
-            firstBitY = new int[4];
-            bitWidth = new int[4];
-            bitHeight = new int[4];
-            for (int i = 0; i < 4; i++) {
-                long bit = getBitMagicFromBlocks(blocks, i, puzzleHeight);
-                int fbY = Long.numberOfTrailingZeros(bit);
-                bit >>= fbY;
-                blockBits[i] = bit;
-                firstBitY[i] = fbY;
-                bitWidth[i] = (i % 2 == 0) ? width : height;
-                bitHeight[i] = (i % 2 == 0) ? height : width;
+    public void precalculate() {
+        rotatedBlocks = new ArrayList<>();
+        bottomLeftY = new int[rotatable ? 4 : 1];
+        for (int i = 0; i < (rotatable ? 4 : 1); i++) {
+            boolean[][] rotated = rotateBlocks(blocks, i);
+            int bly = 0;
+            for (; bly < rotated[0].length; bly++) {
+                if (rotated[0][bly])
+                    break;
             }
-        } else {
-            long bit = getBitMagicFromBlocks(blocks, 0, puzzleHeight);
-            int fbY = Long.numberOfTrailingZeros(bit);
-            bit >>= fbY;
-            blockBits = new long[]{bit};
-            firstBitY = new int[]{fbY};
-            bitWidth = new int[]{width};
-            bitHeight = new int[]{height};
+
+            rotatedBlocks.add(rotated);
+            bottomLeftY[i] = bly;
+        }
+
+        count = 0;
+        for (int x = 0; x < blocks.length; x++) {
+            for (int y = 0; y < blocks[0].length; y++) {
+                if (blocks[x][y])
+                    count++;
+            }
         }
     }
 
-    public static long getBitMagicFromBlocks(boolean[][] blocks, int rotation, int puzzleHeight) {
-        long bit = 0;
+    public static boolean[][] optimizeBlocks(boolean[][] blocks) {
+        int mx, my, Mx, My;
+        mx = my = Integer.MAX_VALUE;
+        Mx = My = Integer.MIN_VALUE;
         for (int i = 0; i < blocks.length; i++) {
-            for (int j = 0; j < blocks[i].length; j++) {
-                if (!blocks[i][j]) continue;
-
-                // ccw
-                if (rotation == 0) bit |= (1L << (j + (i * puzzleHeight)));
-                else if (rotation == 1)
-                    bit |= (1L << (i + ((blocks[i].length - j - 1) * puzzleHeight)));
-                else if (rotation == 2)
-                    bit |= (1L << ((blocks[i].length - j - 1) + ((blocks.length - i - 1) * puzzleHeight)));
-                else bit |= (1L << ((blocks.length - i - 1) + j * puzzleHeight));
-            }
-        }
-        return bit;
-    }
-
-    public static BlocksRule rotateRule(BlocksRule rule, int rotation) {
-        boolean[][] rotated;
-        if (rotation % 2 == 0) rotated = new boolean[rule.width][rule.height];
-        else rotated = new boolean[rule.height][rule.width];
-
-        for (int i = 0; i < rule.width; i++) {
-            for (int j = 0; j < rule.height; j++) {
-                if (!rule.blocks[i][j]) continue;
-
-                //ccw
-                if (rotation == 0) rotated[i][j] = true;
-                else if (rotation == 1) rotated[rule.height - j - 1][i] = true;
-                else if (rotation == 2) rotated[rule.width - i - 1][rule.height - j - 1] = true;
-                else rotated[j][rule.width - i - 1] = true;
-            }
-        }
-
-        return new BlocksRule(rotated, rule.puzzleHeight, rule.rotatable, rule.subtractive, rule.color);
-    }
-
-    public int getBlockSize() {
-        return Long.bitCount(blockBits[0]);
-    }
-
-    /*public static boolean[][] getBlocksFromBitMagic(long bit, int width, int height){
-        boolean[][] blocks = new boolean[width][height];
-        for(int i = 0; i < width; i++){
-            for(int j = 0; j < height; j++){
-                if((bit >> (j + i * height) & 1) > 0){
-                    blocks[i][j] = true;
+            for (int j = 0; j < blocks[0].length; j++) {
+                if (blocks[i][j]) {
+                    mx = Math.min(mx, i);
+                    my = Math.min(my, j);
+                    Mx = Math.max(Mx, i);
+                    My = Math.max(My, j);
                 }
             }
         }
-        return blocks;
-    }*/
+        if (mx == Integer.MAX_VALUE) {
+            return new boolean[1][1];
+        }
+
+        boolean[][] newBlocks = new boolean[Mx - mx + 1][My - my + 1];
+        for (int i = mx; i <= Mx; i++) {
+            for (int j = my; j <= My; j++) {
+                newBlocks[i - mx][j - my] = blocks[i][j];
+            }
+        }
+        return newBlocks;
+    }
+
+    public static boolean[][] rotateBlocks(boolean[][] blocks, int rotation) {
+        int width = blocks.length;
+        int height = blocks[0].length;
+
+        boolean[][] rotated;
+        if (rotation % 2 == 0) rotated = new boolean[width][height];
+        else rotated = new boolean[height][width];
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                if (!blocks[i][j]) continue;
+
+                //ccw
+                if (rotation == 0) rotated[i][j] = true;
+                else if (rotation == 1) rotated[height - j - 1][i] = true;
+                else if (rotation == 2) rotated[width - i - 1][height - j - 1] = true;
+                else rotated[j][width - i - 1] = true;
+            }
+        }
+        return rotated;
+    }
+
+    public int getBlockCount() {
+        return count;
+    }
+
+    public static boolean equalBlocks(boolean[][] a, boolean[][] b) {
+        if (a.length != b.length || a[0].length != b[0].length)
+            return false;
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                if (a[i][j] != b[i][j])
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public static BlocksRule rotateRule(BlocksRule rule, int rotation) {
+        return new BlocksRule(rotateBlocks(rule.blocks, rotation), rule.rotatable, rule.subtractive, rule.color);
+    }
 
     @Override
     public boolean canValidateLocally() {
@@ -172,143 +182,162 @@ public class BlocksRule extends Colorable {
         jsonObject.put("subtractive", subtractive);
     }
 
-    private static long board = 0;
-    // private static int[][] boardDebug;
-    private static long cachedCount = 0;
-    private static final long MAX_CACHE = 1000000;
-
-    private static final HashMap<Long, HashSet<Long>> dp = new HashMap<>();
-
-    public static boolean tryAllPermutation(List<BlocksRule> rules, long taken, int takenCount, int puzzleWidth, int puzzleHeight) throws InterruptedException {
+    public static boolean tryAllSubtractiveBlocks(List<BlocksRule> subtractiveRules, List<BlocksRule> nonSubtractiveRules, int subtractiveTakenCount,
+                                                  boolean[] nonSubtractiveTaken, int nonSubtractiveTakenCount, int[][] board, int[][] target) throws InterruptedException {
         if (Thread.interrupted())
             throw new InterruptedException();
 
-        if (takenCount == rules.size()) {
-            return true;
-        } else {
-            HashSet<Long> set = null;
-            if (cachedCount < MAX_CACHE && rules.size() - takenCount <= 7) {
-                if (dp.containsKey(taken))
-                    set = dp.get(taken);
-                else {
-                    set = new HashSet<>();
-                    dp.put(taken, set);
-                }
-            }
+        if (subtractiveRules.size() == subtractiveTakenCount) {
+            return tryAllNonSubtractiveBlocks(nonSubtractiveRules, nonSubtractiveTaken, nonSubtractiveTakenCount, board, target, 0, 0);
+        }
 
-            // Pruning
-            if (set != null && set.contains(board))
-                return false;
+        for (int x = 0; x < board.length; x++) {
+            for (int y = 0; y < board[0].length; y++) {
+                for (boolean[][] blocks : subtractiveRules.get(subtractiveTakenCount).rotatedBlocks) {
+                    if (x + blocks.length - 1 >= board.length || y + blocks[0].length - 1 >= board[0].length)
+                        continue;
 
-            // Try to fill rightmost zero bit => Fill the board from the left-bottom first
-            int index = Long.numberOfTrailingZeros(~board);
-            int indexX = index / puzzleHeight;
-            int indexY = index % puzzleHeight;
-            for (int i = 0; i < rules.size(); i++) {
-                if (((taken >> i) & 1) > 0) continue;
-                BlocksRule block = rules.get(i);
-                // If the block is rotatable, try all directions
-                for (int j = 0; j < block.blockBits.length; j++) {
-                    // check top boundary (If firstBitY > 0, it means left-bottom of the block is empty
-                    if (puzzleHeight < block.bitHeight[j] - block.firstBitY[j] + indexY) continue;
-                    // bottom boundary
-                    if (0 > indexY - block.firstBitY[j]) continue;
-                    // no need to check left boundary
-                    // right boundary
-                    if (puzzleWidth < block.bitWidth[j] + indexX) continue;
-
-                    // Placing the block in the right position by shifting bits
-                    long b = block.blockBits[j] << index;
-                    if ((board & b) == 0) {
-                        taken |= 1 << i;
-                        board ^= b;
-
-                        // Debug
-                        /*long bb = block.blockBits[j];
-                        int xx = 0;
-                        int yy = block.firstBitY[j];
-                        int indexYY = indexY - block.firstBitY[j];
-                        while(bb > 0){
-                            if(yy >= puzzleHeight){
-                                yy = 0;
-                                xx++;
-                            }
-                            if((bb & 1) > 0){
-                                boardDebug[xx + indexX][yy + indexYY] = i;
-                            }
-                            yy++;
-                            bb >>= 1;
-                        }*/
-
-                        if (tryAllPermutation(rules, taken, takenCount + 1, puzzleWidth, puzzleHeight)) {
-                            return true;
+                    for (int xx = 0; xx < blocks.length; xx++) {
+                        for (int yy = 0; yy < blocks[0].length; yy++) {
+                            if (blocks[xx][yy])
+                                board[x + xx][y + yy]--;
                         }
-                        board ^= b;
-                        taken ^= 1 << i;
+                    }
+
+                    if (tryAllSubtractiveBlocks(subtractiveRules, nonSubtractiveRules, subtractiveTakenCount + 1, nonSubtractiveTaken, nonSubtractiveTakenCount, board, target))
+                        return true;
+
+                    for (int xx = 0; xx < blocks.length; xx++) {
+                        for (int yy = 0; yy < blocks[0].length; yy++) {
+                            if (blocks[xx][yy])
+                                board[x + xx][y + yy]++;
+                        }
                     }
                 }
             }
-            if (set != null) {
-                set.add(board);
-                cachedCount++;
-                if (cachedCount % 10000 == 0)
-                    System.out.println("Cached = " + cachedCount);
-            }
-            return false;
         }
+
+        return false;
+    }
+
+    public static boolean tryAllNonSubtractiveBlocks(List<BlocksRule> nonSubtractiveRules, boolean[] nonSubtractiveTaken, int nonSubtractiveTakenCount, int[][] board, int[][] target, int lx, int ly) throws InterruptedException {
+        if (Thread.interrupted())
+            throw new InterruptedException();
+
+        if (nonSubtractiveRules.size() == nonSubtractiveTakenCount)
+            return true;
+
+        // Find next fill position
+        while(lx < board.length) {
+            if (board[lx][ly] < target[lx][ly])
+                break;
+            ly++;
+            if (ly == board[0].length) {
+                lx++;
+                ly = 0;
+            }
+        }
+
+        // Not happened
+        if (lx >= board.length)
+            return false;
+
+        for (int i = 0; i < nonSubtractiveRules.size(); i++) {
+            if (nonSubtractiveTaken[i])
+                continue;
+
+            for (int j = 0; j < nonSubtractiveRules.get(i).rotatedBlocks.size(); j++) {
+                boolean[][] blocks = nonSubtractiveRules.get(i).rotatedBlocks.get(j);
+                int bly = nonSubtractiveRules.get(i).bottomLeftY[j];
+                if (lx + blocks.length - 1 >= board.length || ly - bly < 0 || ly + blocks[0].length - 1 - bly >= board[0].length)
+                    continue;
+
+                boolean canPlace = true;
+                for (int x = 0; x < blocks.length; x++) {
+                    for (int y = 0; y < blocks[0].length; y++) {
+                        if (blocks[x][y] && board[lx + x][ly + y - bly] >= target[lx + x][ly + y - bly]) {
+                            canPlace = false;
+                            break;
+                        }
+                    }
+                    if (!canPlace)
+                        break;
+                }
+
+                if (!canPlace)
+                    continue;
+
+                for (int x = 0; x < blocks.length; x++) {
+                    for (int y = 0; y < blocks[0].length; y++) {
+                        if (blocks[x][y])
+                            board[lx + x][ly + y - bly]++;
+                    }
+                }
+
+                nonSubtractiveTaken[i] = true;
+                if (tryAllNonSubtractiveBlocks(nonSubtractiveRules, nonSubtractiveTaken, nonSubtractiveTakenCount + 1, board, target, lx, ly))
+                    return true;
+                nonSubtractiveTaken[i] = false;
+
+                for (int x = 0; x < blocks.length; x++) {
+                    for (int y = 0; y < blocks[0].length; y++) {
+                        if (blocks[x][y])
+                            board[lx + x][ly + y - bly]--;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     public static List<RuleBase> areaValidate(Area area) throws InterruptedException {
-        List<BlocksRule> blockRules = new ArrayList<>();
-        List<RuleBase> rules = new ArrayList<>();
+        List<BlocksRule> subtractiveBlocks = new ArrayList<>();
+        List<BlocksRule> nonSubtractiveBlocks = new ArrayList<>();
+        List<RuleBase> allBlocks = new ArrayList<>();
         int blockCount = 0;
+
         for (Tile tile : area.tiles) {
             if (tile.getRule() instanceof BlocksRule) {
                 BlocksRule block = (BlocksRule) tile.getRule();
                 if (block.eliminated) continue;
-                blockRules.add(block);
-                rules.add(block);
-                blockCount += Long.bitCount(block.blockBits[0]);
+
+                if (block.subtractive) {
+                    subtractiveBlocks.add(block);
+                    blockCount -= block.count;
+                } else {
+                    nonSubtractiveBlocks.add(block);
+                    blockCount += block.count;
+                }
+                allBlocks.add(block);
             }
         }
 
         // Total block count should equal to area size
-        if (area.tiles.size() != blockCount) {
-            return rules;
+        if (blockCount != 0 && blockCount != area.tiles.size()) {
+            return allBlocks;
         }
 
-        board = ~0L;
         GridPuzzle gridPuzzle = (GridPuzzle) area.puzzle;
-        /*boardDebug = new int[gridPuzzle.getWidth()][gridPuzzle.getHeight()];
-        for (int i = 0; i < gridPuzzle.getWidth(); i++) {
-            for (int j = 0; j < gridPuzzle.getHeight(); j++) {
-                boardDebug[i][j] = -1;
+        int[][] target = new int[gridPuzzle.getWidth()][gridPuzzle.getHeight()];
+        if (blockCount > 0) {
+            for (Tile tile : area.tiles) {
+                target[tile.getGridX()][tile.getGridY()] = 1;
             }
-        }*/
-        for (Tile tile : area.tiles) {
-            board &= ~(1L << (tile.getGridY() + (tile.getGridX() * gridPuzzle.getHeight())));
         }
-        dp.clear();
-        cachedCount = 0;
-        boolean res = tryAllPermutation(blockRules, 0, 0, gridPuzzle.getWidth(), gridPuzzle.getHeight());
-        for (HashSet<Long> v : dp.values())
-            v.clear();
-        dp.clear();
 
-        if (!res) {
-            return rules;
+        if (!tryAllSubtractiveBlocks(subtractiveBlocks, nonSubtractiveBlocks, 0,
+                new boolean[nonSubtractiveBlocks.size()], 0, new int[gridPuzzle.getWidth()][gridPuzzle.getHeight()], target)) {
+            return allBlocks;
         }
-        /*for (int i = gridPuzzle.getHeight() - 1; i >= 0; i--) {
-            String str = "";
-            for (int j = 0; j < gridPuzzle.getWidth(); j++) {
-                str += "\t" + boardDebug[j][i];
-            }
-            Log.i("BLOCK", str);
-        }*/
+
         return new ArrayList<>();
     }
 
     public static boolean[][] listToGridArray(List<Vector2Int> blocks) {
+        if (blocks.size() == 0)
+            return new boolean[1][1];
+
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;
@@ -335,10 +364,10 @@ public class BlocksRule extends Colorable {
             throw new RuntimeException();
         }
         obj.blocks = blocks.clone();
-        obj.blockBits = blockBits.clone();
-        obj.firstBitY = firstBitY.clone();
-        obj.bitWidth = bitWidth.clone();
-        obj.bitHeight = bitHeight.clone();
+        obj.rotatedBlocks = new ArrayList<>();
+        for (boolean[][] blocks : rotatedBlocks)
+            obj.rotatedBlocks.add(blocks.clone());
+        obj.bottomLeftY = bottomLeftY.clone();
         return obj;
     }
 

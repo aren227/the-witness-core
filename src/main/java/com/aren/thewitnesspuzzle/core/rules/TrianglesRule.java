@@ -48,6 +48,7 @@ public class TrianglesRule extends RuleBase {
 
     @Override
     public void serialize(JSONObject jsonObject) throws JSONException {
+        super.serialize(jsonObject);
         jsonObject.put("count", count);
     }
 

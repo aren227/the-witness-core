@@ -13,8 +13,8 @@ public class PalettePreset {
 
     public PalettePreset() {
         register("General_Slide", "#fd9700", "#8a4700", "#fffef9", "#fbe50d", "#050a0f", 0.5f);
-        register("General_Panel", "#babcb9", "#5a4d3f", "#fccf97", "#ff8326", "#050a0f", 0.3f);
-        register("Entry_1", "#ffcb00", "#422c06", "#feffc5", "#fef656", "#050a0f", 1.0f);
+        register("General_Panel", "#c9c2b9", "#665031", "#e6a35e", "#f77b20", "#f52c27", 0.1f);
+        register("Entry_1", "#e6a500", "#483501", "#f6f39f", "#fedf50", "#050a0f", 0.5f);
         register("Green_1", "#0ee851", "#006615", "#eaeabc", "#b8ff14", "#050a0f", 0.5f);
         register("Blue_1", "#514eed", "#1405a1", "#aaccf4", "#659cff", "#050a0f", 0.5f);
         register("GlassFactory_1", "#96bce5", "#374b8d", "#e4e6e1", "#18fe9d", "#050a0f", 0.2f);

@@ -62,8 +62,6 @@ public abstract class RuleBase implements Cloneable {
                 return new HexagonRule(jsonObject);
             case SquareRule.NAME:
                 return new SquareRule(jsonObject);
-            case SquareVertexRule.NAME:
-                return new SquareVertexRule(jsonObject);
             case StartingPointRule.NAME:
                 return new StartingPointRule(jsonObject);
             case SunRule.NAME:

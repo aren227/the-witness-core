@@ -359,7 +359,7 @@ public class Cursor {
     }
 
     public boolean partiallyContainsEdge(Edge edge) {
-        return containsEdge(edge) || currentCursorEdge.edge == edge;
+        return containsEdge(edge) || (currentCursorEdge != null && currentCursorEdge.edge == edge);
     }
 
     public boolean containsVertex(Vertex vertex) {

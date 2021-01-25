@@ -106,7 +106,7 @@ public class SymmetryCursor extends Cursor {
 
     @Override
     public boolean partiallyContainsEdge(Edge edge) {
-        return containsEdge(edge) || currentCursorEdge.edge == edge || ((GridSymmetryPuzzle) puzzle).getOppositeEdge(currentCursorEdge.edge) == edge;
+        return containsEdge(edge) || (currentCursorEdge != null && (currentCursorEdge.edge == edge || ((GridSymmetryPuzzle) puzzle).getOppositeEdge(currentCursorEdge.edge) == edge));
     }
 
     public SymmetryColor getSymmetricColor(Vertex vertex) {

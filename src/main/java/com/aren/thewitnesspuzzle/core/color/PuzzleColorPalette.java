@@ -6,6 +6,7 @@ import org.json.JSONObject;
 public class PuzzleColorPalette {
 
     private int background;
+    private int tile;
     private int path;
     private int cursor;
     private int cursorSucceeded;
@@ -26,7 +27,12 @@ public class PuzzleColorPalette {
     }
 
     public PuzzleColorPalette(int background, int path, int cursor, int cursorSucceeded, int cursorFailed, float bloomIntensity) {
+        this(background, background, path, cursor, cursorSucceeded, cursorFailed, bloomIntensity);
+    }
+
+    public PuzzleColorPalette(int background, int tile, int path, int cursor, int cursorSucceeded, int cursorFailed, float bloomIntensity) {
         this.background = background;
+        this.tile = tile;
         this.path = path;
         this.cursor = cursor;
         this.cursorSucceeded = cursorSucceeded;
@@ -36,6 +42,10 @@ public class PuzzleColorPalette {
 
     public PuzzleColorPalette(JSONObject jsonObject) throws JSONException {
         background = jsonObject.getInt("background");
+        if (jsonObject.has("tile"))
+            tile = jsonObject.getInt("tile");
+        else
+            tile = background;
         path = jsonObject.getInt("path");
         cursor = jsonObject.getInt("cursor");
         cursorSucceeded = jsonObject.getInt("success");
@@ -45,7 +55,7 @@ public class PuzzleColorPalette {
 
     @Override
     public PuzzleColorPalette clone() {
-        return new PuzzleColorPalette(background, path, cursor, cursorSucceeded, cursorFailed, bloomIntensity);
+        return new PuzzleColorPalette(background, tile, path, cursor, cursorSucceeded, cursorFailed, bloomIntensity);
     }
 
     public int getBackgroundColor() {
@@ -54,6 +64,14 @@ public class PuzzleColorPalette {
 
     public void setBackgroundColor(int color) {
         background = color;
+    }
+
+    public int getTileColor() {
+        return tile;
+    }
+
+    public void setTileColor(int color ){
+        tile = color;
     }
 
     public int getPathColor() {
@@ -98,6 +116,7 @@ public class PuzzleColorPalette {
 
     public void set(PuzzleColorPalette palette) {
         background = palette.getBackgroundColor();
+        tile = palette.getTileColor();
         path = palette.getPathColor();
         cursor = palette.getCursorColor();
         cursorSucceeded = palette.getCursorSucceededColor();
@@ -107,6 +126,7 @@ public class PuzzleColorPalette {
     public JSONObject serialize() throws JSONException {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("background", getBackgroundColor());
+        jsonObject.put("tile", getTileColor());
         jsonObject.put("path", getPathColor());
         jsonObject.put("cursor", getCursorColor());
         jsonObject.put("success", getCursorSucceededColor());

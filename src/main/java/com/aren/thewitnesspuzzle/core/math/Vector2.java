@@ -38,6 +38,15 @@ public class Vector2 {
         return new Vector2(len * to.x, len * to.y);
     }
 
+    public Vector2 normalize() {
+        float length = length();
+        return new Vector2(x / length, y / length);
+    }
+
+    public Vector2 multiply(float v) {
+        return new Vector2(x * v, y * v);
+    }
+
     public Vector3 toVector3() {
         return toVector3(0);
     }

@@ -60,6 +60,8 @@ public abstract class RuleBase implements Cloneable {
                 return new EndingPointRule(jsonObject);
             case HexagonRule.NAME:
                 return new HexagonRule(jsonObject);
+            case RemoveEdgeRule.NAME:
+                return new RemoveEdgeRule(jsonObject);
             case SquareRule.NAME:
                 return new SquareRule(jsonObject);
             case StartingPointRule.NAME:

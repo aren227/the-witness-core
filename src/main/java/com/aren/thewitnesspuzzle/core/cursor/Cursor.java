@@ -6,6 +6,7 @@ import com.aren.thewitnesspuzzle.core.graph.EdgeProportion;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.rules.BrokenLineRule;
 import com.aren.thewitnesspuzzle.core.rules.EndingPointRule;
+import com.aren.thewitnesspuzzle.core.rules.RemoveEdgeRule;
 import com.aren.thewitnesspuzzle.core.rules.StartingPointRule;
 
 import java.util.*;
@@ -323,6 +324,11 @@ public class Cursor {
         Edge edge = edgeProportion.edge;
         float length = edge.getLength();
 
+        if (edge.getRule() instanceof RemoveEdgeRule) {
+            if (from <= 0.5f) to = 0f;
+            else to = 1f;
+        }
+
         // Broken edge collision check
         if (edge.getRule() instanceof BrokenLineRule) {
             float collisionProportion = ((BrokenLineRule) edge.getRule()).getCollisionCircleRadius() + puzzle.getPathWidth() * 0.5f / length;
@@ -350,6 +356,10 @@ public class Cursor {
 
     public boolean containsEdge(Edge edge) {
         return getFullyVisitedEdges().contains(edge);
+    }
+
+    public boolean partiallyContainsEdge(Edge edge) {
+        return containsEdge(edge) || currentCursorEdge.edge == edge;
     }
 
     public boolean containsVertex(Vertex vertex) {

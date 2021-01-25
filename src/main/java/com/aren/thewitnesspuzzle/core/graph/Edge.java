@@ -26,6 +26,9 @@ public class Edge extends GraphElement {
             int to = jsonObject.getInt("to");
             this.from = puzzleBase.getVertex(from);
             this.to = puzzleBase.getVertex(to);
+
+            this.from.adj.add(this.to);
+            this.to.adj.add(this.from);
         } catch (JSONException ignored) {
 
         }

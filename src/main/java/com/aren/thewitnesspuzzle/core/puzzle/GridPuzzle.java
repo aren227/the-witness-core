@@ -7,13 +7,17 @@ import com.aren.thewitnesspuzzle.core.graph.Tile;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.math.BoundingBox;
 import com.aren.thewitnesspuzzle.core.math.Vector2;
+import com.aren.thewitnesspuzzle.core.math.Vector2Int;
 import com.aren.thewitnesspuzzle.core.rules.EndingPointRule;
+import com.aren.thewitnesspuzzle.core.rules.RemoveEdgeRule;
 import com.aren.thewitnesspuzzle.core.rules.StartingPointRule;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class GridPuzzle extends PuzzleBase {
 
@@ -112,6 +116,8 @@ public class GridPuzzle extends PuzzleBase {
             tile.edges.add(getEdgeAt(i, j + 1, true));
             tile.edges.add(getEdgeAt(i + 1, j, false));
         }
+
+        updateNotInAreaTiles();
     }
 
     @Override
@@ -260,6 +266,35 @@ public class GridPuzzle extends PuzzleBase {
             }
         }
         return vertices;
+    }
+
+    public void updateNotInAreaTiles() {
+        boolean[][] notInArea = new boolean[width + 2][height + 2];
+
+        Queue<Vector2Int> q = new LinkedList<>();
+        q.offer(new Vector2Int(0, 0));
+        while(q.size() > 0) {
+            Vector2Int f = q.poll();
+
+            if (notInArea[f.x][f.y])
+                continue;
+            notInArea[f.x][f.y] = true;
+
+            if (f.x > 0 && (f.y == 0 || f.y == height + 1 || gridVerticalEdges[f.x - 1][f.y - 1].getRule() instanceof RemoveEdgeRule))
+                q.offer(new Vector2Int(f.x - 1, f.y));
+            if (f.x < width + 1 && (f.y == 0 || f.y == height + 1 || gridVerticalEdges[f.x][f.y - 1].getRule() instanceof RemoveEdgeRule))
+                q.offer(new Vector2Int(f.x + 1, f.y));
+            if (f.y > 0 && (f.x == 0 || f.x == width + 1 || gridHorizontalEdges[f.x - 1][f.y - 1].getRule() instanceof RemoveEdgeRule))
+                q.offer(new Vector2Int(f.x, f.y - 1));
+            if (f.y < height + 1 && (f.x == 0 || f.x == width + 1 || gridHorizontalEdges[f.x - 1][f.y].getRule() instanceof RemoveEdgeRule))
+                q.offer(new Vector2Int(f.x, f.y + 1));
+        }
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                getTileAt(i, j).notInArea = notInArea[i + 1][j + 1];
+            }
+        }
     }
 
     @Override

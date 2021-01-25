@@ -51,7 +51,7 @@ public class GridAreaSplitter {
 
         for (int i = 0; i < puzzle.getWidth(); i++) {
             for (int j = 0; j < puzzle.getHeight(); j++) {
-                if (areas[i][j] == null) {
+                if (!puzzle.getTileAt(i, j).notInArea && areas[i][j] == null) {
                     Area area = new Area(puzzle);
                     area.id = areaList.size();
                     areaList.add(area);
@@ -64,11 +64,17 @@ public class GridAreaSplitter {
     public void assignAreaColorRandomly(Random random, List<Color> colors) {
         visited = new boolean[puzzle.getWidth()][puzzle.getHeight()];
 
-        fillColor(0, 0, colors, random.nextInt(colors.size()));
+        for (int i = 0; i < puzzle.getWidth(); i++) {
+            for (int j = 0; j < puzzle.getHeight(); j++) {
+                if (areas[i][j] != null && areas[i][j].color == null) {
+                    fillColor(i, j, colors, colors.size() - 1);
+                }
+            }
+        }
     }
 
     private void fill(int x, int y, Area area) {
-        if (areas[x][y] != null) return;
+        if (areas[x][y] != null || (puzzle.getTileAt(x, y) != null && puzzle.getTileAt(x, y).notInArea)) return;
 
         areas[x][y] = area;
         area.tiles.add(puzzle.getTileAt(x, y));
@@ -81,7 +87,7 @@ public class GridAreaSplitter {
     }
 
     private void fillColor(int x, int y, List<Color> colors, int index) {
-        if (visited[x][y]) return;
+        if (visited[x][y] || areas[x][y] == null) return;
 
         if (areas[x][y].color == null) {
             index = (index + 1) % colors.size();

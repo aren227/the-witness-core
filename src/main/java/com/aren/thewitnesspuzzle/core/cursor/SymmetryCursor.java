@@ -5,6 +5,7 @@ import com.aren.thewitnesspuzzle.core.graph.Edge;
 import com.aren.thewitnesspuzzle.core.graph.EdgeProportion;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.rules.BrokenLineRule;
+import com.aren.thewitnesspuzzle.core.rules.RemoveEdgeRule;
 import com.aren.thewitnesspuzzle.core.rules.StartingPointRule;
 import com.aren.thewitnesspuzzle.core.rules.SymmetryColor;
 
@@ -29,6 +30,11 @@ public class SymmetryCursor extends Cursor {
         GridSymmetryPuzzle gridSymmetryPuzzle = (GridSymmetryPuzzle) puzzle;
 
         Edge oppositeEdge = gridSymmetryPuzzle.getOppositeEdge(edge);
+
+        if (edge.getRule() instanceof RemoveEdgeRule || oppositeEdge.getRule() instanceof RemoveEdgeRule) {
+            if (from <= 0.5f) to = 0f;
+            else to = 1f;
+        }
 
         // Broken edge collision check
         if (edge.getRule() instanceof BrokenLineRule || oppositeEdge.getRule() instanceof BrokenLineRule) {
@@ -96,6 +102,11 @@ public class SymmetryCursor extends Cursor {
     public boolean containsVertex(Vertex vertex) {
         List<Vertex> vertices = getVisitedVertices();
         return vertices.contains(vertex) || vertices.contains(((GridSymmetryPuzzle) puzzle).getOppositeVertex(vertex));
+    }
+
+    @Override
+    public boolean partiallyContainsEdge(Edge edge) {
+        return containsEdge(edge) || currentCursorEdge.edge == edge || ((GridSymmetryPuzzle) puzzle).getOppositeEdge(currentCursorEdge.edge) == edge;
     }
 
     public SymmetryColor getSymmetricColor(Vertex vertex) {

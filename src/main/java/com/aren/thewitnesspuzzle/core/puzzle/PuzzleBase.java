@@ -9,6 +9,7 @@ import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.math.BoundingBox;
 import com.aren.thewitnesspuzzle.core.math.Vector2;
 import com.aren.thewitnesspuzzle.core.rules.EndingPointRule;
+import com.aren.thewitnesspuzzle.core.rules.RemoveEdgeRule;
 import com.aren.thewitnesspuzzle.core.rules.RuleBase;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -145,10 +146,13 @@ public class PuzzleBase {
         boundingBox.addCircle(graphElement.getPosition(), 0.5f);
     }
 
-    public Edge getNearestEdge(Vector2 pos) {
+    public Edge getNearestEdge(Vector2 pos, boolean containsRemoved) {
         float minDist = Float.MAX_VALUE;
         Edge minEdge = null;
         for (Edge edge : edges) {
+            if (!containsRemoved && edge.getRule() instanceof RemoveEdgeRule)
+                continue;
+
             float dist = edge.getDistance(pos);
             if (dist < minDist) {
                 minDist = dist;

@@ -60,6 +60,9 @@ public class PuzzleValidator {
                 }
             }
 
+            for (RuleBase rule : rules)
+                rule.eliminated = false;
+
             for (RuleBase rule : rules) {
                 if (!rule.validateLocally(cursor)) {
                     result.notOnAreaErrors.add(rule);

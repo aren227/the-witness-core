@@ -6,7 +6,6 @@ import com.aren.thewitnesspuzzle.core.cursor.area.GridAreaSplitter;
 import com.aren.thewitnesspuzzle.core.graph.Edge;
 import com.aren.thewitnesspuzzle.core.graph.Vertex;
 import com.aren.thewitnesspuzzle.core.puzzle.GridPuzzle;
-import com.aren.thewitnesspuzzle.core.puzzle.GridSymmetryPuzzle;
 import com.aren.thewitnesspuzzle.core.puzzle.PuzzleBase;
 import com.aren.thewitnesspuzzle.core.rules.RuleBase;
 
@@ -43,21 +42,39 @@ public class PuzzleValidator {
             if (result.timedOut)
                 return result;
 
-            //FIXME: Dirty code again. I think getVisitedVerticies() of SymmetryCursor should return with opposite vertices.
+            // Validate rules on the line like hexagon.
+            // Note that rules on the line are not included in any area.
+            // It's slow, but can contain edges or vertices not adjoining valid tiles.
             List<RuleBase> rules = new ArrayList<>();
-            for (Vertex vertex : cursor.getVisitedVertices()) {
-                if (vertex.getRule() != null) rules.add(vertex.getRule());
-                if (puzzleBase instanceof GridSymmetryPuzzle) {
-                    Vertex opposite = ((GridSymmetryPuzzle) puzzleBase).getOppositeVertex(vertex);
-                    if (opposite.getRule() != null) rules.add(opposite.getRule());
+            for (Vertex vertex : puzzleBase.getVertices()) {
+                if (vertex.getRule() == null)
+                    continue;
+
+                boolean notIncluded = true;
+                for (Area area : splitter.areaList) {
+                    if (area.vertices.contains(vertex)) {
+                        notIncluded = false;
+                        break;
+                    }
                 }
+
+                if (notIncluded)
+                    rules.add(vertex.getRule());
             }
-            for (Edge edge : cursor.getFullyVisitedEdges()) {
-                if (edge.getRule() != null) rules.add(edge.getRule());
-                if (puzzleBase instanceof GridSymmetryPuzzle) {
-                    Edge opposite = ((GridSymmetryPuzzle) puzzleBase).getOppositeEdge(edge);
-                    if (opposite.getRule() != null) rules.add(opposite.getRule());
+            for (Edge edge : puzzleBase.getEdges()) {
+                if (edge.getRule() == null)
+                    continue;
+
+                boolean notIncluded = true;
+                for (Area area : splitter.areaList) {
+                    if (area.edges.contains(edge)) {
+                        notIncluded = false;
+                        break;
+                    }
                 }
+
+                if (notIncluded)
+                    rules.add(edge.getRule());
             }
 
             for (RuleBase rule : rules)

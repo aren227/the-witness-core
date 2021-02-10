@@ -122,7 +122,7 @@ public class GridPuzzle extends PuzzleBase {
 
     @Override
     public float getPathWidth() {
-        return Math.max(width, height) * 0.05f + 0.05f;
+        return (float) Math.log10(Math.max(width, height)) * 0.25f + 0.1f;
     }
 
     @Override
